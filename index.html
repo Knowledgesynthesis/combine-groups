@@ -1,0 +1,43 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Combine Mean & SD</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Combine Mean &amp; SD</h1>
+
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>n</th>
+          <th>Mean</th>
+          <th>Dispersion</th>
+          <th colspan="2">Input</th>
+          <th>SD</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+
+    <button id="add-row">+ Add row</button>
+
+    <section id="result" class="hidden">
+      <h2>Combined Result</h2>
+      <div class="stats">
+        <div><span class="label">N</span><span id="totalN"></span></div>
+        <div><span class="label">Mean</span><span id="combinedMean"></span></div>
+        <div><span class="label">SD</span><span id="combinedSd"></span></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
