@@ -99,6 +99,77 @@ function getSD(tr) {
   }
 }
 
+function normalDist(x, mean, sd) {
+  return (1 / (sd * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * ((x - mean) / sd) ** 2);
+}
+
+function plotCurves(groups, combined) {
+  const plotDiv = document.getElementById('individual-curves');
+  const combDiv = document.getElementById('combined-curve');
+  const plotsSection = document.getElementById('plots');
+
+  if (groups.length < 1) {
+    plotsSection.classList.add('hidden');
+    Plotly.purge(plotDiv);
+    Plotly.purge(combDiv);
+    return;
+  }
+  plotsSection.classList.remove('hidden');
+
+  // Find min/max for x axis
+  let minX = Math.min(...groups.map(g => g.mean - 3 * g.sd));
+  let maxX = Math.max(...groups.map(g => g.mean + 3 * g.sd));
+  if (combined) {
+    minX = Math.min(minX, combined.mean - 3 * combined.sd);
+    maxX = Math.max(maxX, combined.mean + 3 * combined.sd);
+  }
+  if (!isFinite(minX) || !isFinite(maxX)) {
+    minX = -10; maxX = 10;
+  }
+  const xs = Array.from({length: 200}, (_, i) => minX + (maxX - minX) * i / 199);
+
+  // Individual curves
+  const traces = groups.map((g, i) => ({
+    x: xs,
+    y: xs.map(x => normalDist(x, g.mean, g.sd)),
+    name: `Group ${i+1} (n=${g.n}, μ=${g.mean}, σ=${g.sd})`,
+    mode: 'lines',
+    line: {width: 2},
+    hovertemplate: 'x: %{x:.2f}<br>y: %{y:.4f}<br>μ: '+g.mean+'<br>σ: '+g.sd+'<extra></extra>'
+  }));
+  Plotly.newPlot(plotDiv, traces, {
+    margin: {t: 20, r: 20, l: 40, b: 40},
+    legend: {orientation: 'h'},
+    xaxis: {title: 'Value'},
+    yaxis: {title: 'Density'},
+    plot_bgcolor: '#122b36',
+    paper_bgcolor: '#122b36',
+    font: {color: '#e2f7fa'}
+  }, {displayModeBar: false, responsive: true});
+
+  // Combined curve
+  if (combined) {
+    Plotly.newPlot(combDiv, [{
+      x: xs,
+      y: xs.map(x => normalDist(x, combined.mean, combined.sd)),
+      name: `Combined (N=${combined.n}, μ=${combined.mean.toFixed(4)}, σ=${combined.sd.toFixed(4)})`,
+      mode: 'lines',
+      line: {color: '#38bdf8', width: 3},
+      hovertemplate: 'x: %{x:.2f}<br>y: %{y:.4f}<br>μ: '+combined.mean.toFixed(4)+'<br>σ: '+combined.sd.toFixed(4)+'<extra></extra>'
+    }], {
+      margin: {t: 20, r: 20, l: 40, b: 40},
+      showlegend: false,
+      xaxis: {title: 'Value'},
+      yaxis: {title: 'Density'},
+      plot_bgcolor: '#122b36',
+      paper_bgcolor: '#122b36',
+      font: {color: '#e2f7fa'}
+    }, {displayModeBar: false, responsive: true});
+  } else {
+    Plotly.purge(combDiv);
+  }
+}
+
 function recalc() {
   const groups = [];
   [...tbody.children].forEach((tr) => {
@@ -111,6 +182,7 @@ function recalc() {
 
   if (groups.length < 2) {
     resultBox.classList.add('hidden');
+    plotCurves(groups, null);
     return;
   }
 
@@ -131,4 +203,5 @@ function recalc() {
   sdEl.textContent = sdCombined.toFixed(4);
 
   resultBox.classList.remove('hidden');
+  plotCurves(groups, {n: N, mean: mu, sd: sdCombined});
 }
