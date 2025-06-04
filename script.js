@@ -79,23 +79,37 @@ function getSD(tr) {
   const n = +tr.querySelector('.n').value;
   if (!n) return undefined;
   const dtype = tr.querySelector('.dtype').value;
-  const get = (cls) => +tr.querySelector('.' + cls)?.value;
+  const get = (cls) => {
+    const el = tr.querySelector('.' + cls);
+    return el && el.value !== '' ? +el.value : NaN;
+  };
 
   switch (dtype) {
-    case 'SD':
-      return get('sdin') || undefined;
-    case 'SE':
-      return (get('sein') || 0) * Math.sqrt(n);
-    case 'CI':
+    case 'SD': {
+      const s = get('sdin');
+      return Number.isFinite(s) ? s : undefined;
+    }
+    case 'SE': {
+      const se = get('sein');
+      return Number.isFinite(se) ? se * Math.sqrt(n) : undefined;
+    }
+    case 'CI': {
       const ll = get('ll'), ul = get('ul');
-      return ll && ul ? ((ul - ll) / 3.92) * Math.sqrt(n) : undefined;
-    case 'Range':
+      return Number.isFinite(ll) && Number.isFinite(ul)
+        ? ((ul - ll) / 3.92) * Math.sqrt(n)
+        : undefined;
+    }
+    case 'Range': {
       const min = get('min'), max = get('max');
-      if (!(min && max)) return undefined;
+      if (!Number.isFinite(min) || !Number.isFinite(max)) return undefined;
       return (max - min) / (n <= 70 ? 4 : 6);
-    case 'IQR':
+    }
+    case 'IQR': {
       const q1 = get('q1'), q3 = get('q3');
-      return q1 && q3 ? (q3 - q1) / 1.35 : undefined;
+      return Number.isFinite(q1) && Number.isFinite(q3)
+        ? (q3 - q1) / 1.35
+        : undefined;
+    }
   }
 }
 
