@@ -190,8 +190,10 @@ function recalc() {
     const n = +tr.querySelector('.n').value;
     const mean = +tr.querySelector('.mean').value;
     const sd = getSD(tr);
-    tr.querySelector('.sd').textContent = sd ? sd.toFixed(4) : '—';
-    if (n && mean && sd) groups.push({ n, mean, sd });
+    tr.querySelector('.sd').textContent = Number.isFinite(sd) ? sd.toFixed(4) : '—';
+    if (Number.isFinite(n) && Number.isFinite(mean) && Number.isFinite(sd)) {
+      groups.push({ n, mean, sd });
+    }
   });
 
   if (groups.length < 2) {
